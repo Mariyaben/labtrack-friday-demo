@@ -66,7 +66,7 @@ These questions are a discovery checklist, not claimed answers from Maria. For t
 
 **Follow-up:** Watch Maria complete her normal morning tasks on the current and proposed dashboard. Use that observation to choose the next change; avoid expanding into reporting, scheduling, CRM or a full redesign during this exercise.
 
-## LT-04 · Package and verify the Friday handoff
+## Delivery checklist · Package and verify the Friday handoff
 
 **Priority:** P0. **Estimate:** 30–45 minutes.
 

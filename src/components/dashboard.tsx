@@ -1,6 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import {
+  CalendarDays,
+  CircleHelp,
+  Layers3,
+  LayoutGrid,
+  RefreshCw,
   ArrowDown,
   ArrowDownToLine,
   ArrowRight,
@@ -198,31 +203,114 @@ export default function Dashboard() {
   }
   return (
     <div className="app-shell">
+      <aside className="sidebar">
+        <a href="/" className="brand" aria-label="LabTrack home">
+          <span className="brand-symbol">
+            <Layers3 size={21} strokeWidth={1.6} />
+          </span>
+          LabTrack
+        </a>
+        <div className="sidebar-workspace">
+          <span className="workspace-caption">DENTAL LAB</span>
+          <strong>Studio Dental Lab</strong>
+          <span className="workspace-location">Kolkata, India</span>
+        </div>
+        <div className="nav-section-label">Workspace</div>
+        <nav aria-label="Main navigation">
+          <button
+            className={view === "cases" ? "nav-item active" : "nav-item"}
+            aria-label="Cases"
+            aria-current={view === "cases" ? "page" : undefined}
+            onClick={() => switchView("cases")}
+          >
+            <LayoutGrid size={17} />
+            <span className="nav-text">Cases</span>
+            <span className="nav-count">{cases.length || "—"}</span>
+          </button>
+          <button
+            className={view === "outbox" ? "nav-item active" : "nav-item"}
+            aria-label="Clinic messages"
+            aria-current={view === "outbox" ? "page" : undefined}
+            onClick={() => switchView("outbox")}
+          >
+            <MailIcon size={17} />
+            <span className="nav-text">Clinic messages</span>
+            {pending.length > 0 && (
+              <span className="nav-count pending-count">{pending.length}</span>
+            )}
+          </button>
+        </nav>
+        {data && cases.some((c) => c.status !== "ready") && (
+          <section className="sidebar-queue" aria-label="Next due cases">
+            <h2>Next due</h2>
+            {cases
+              .filter((c) => c.status !== "ready")
+              .slice(0, 2)
+              .map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    switchView("cases");
+                    openCase(c);
+                  }}
+                  aria-label={`Open next due case ${c.code}`}
+                >
+                  <span className="queue-case">
+                    {c.code}
+                    <span
+                      className={
+                        c.due_date < data.today
+                          ? "queue-date late"
+                          : "queue-date"
+                      }
+                    >
+                      {c.due_date < data.today
+                        ? "Overdue"
+                        : c.due_date === data.today
+                          ? "Today"
+                          : formatDate(c.due_date)}
+                    </span>
+                  </span>
+                  <span className="queue-clinic">{c.clinic}</span>
+                </button>
+              ))}
+          </section>
+        )}
+        <div className="sidebar-bottom">
+          <button
+            className={view === "guide" ? "nav-item active" : "nav-item"}
+            aria-label="Demo notes"
+            aria-current={view === "guide" ? "page" : undefined}
+            onClick={() => switchView("guide")}
+          >
+            <CircleHelp size={17} />
+            <span className="nav-text">Demo notes</span>
+          </button>
+          <div className="sidebar-footnote">
+            LabTrack <span>Friday demo</span>
+          </div>
+        </div>
+      </aside>
       <div className="main-shell">
         <header className="topbar">
           <div className="header-inner">
-            <a href="/" className="brand" aria-label="LabTrack home">
-              LabTrack
-            </a>
-            <nav aria-label="Main navigation">
-              <button
-                className={view === "cases" ? "nav-item active" : "nav-item"}
-                onClick={() => switchView("cases")}
-              >
-                Cases
-              </button>
-              <button
-                className={view === "outbox" ? "nav-item active" : "nav-item"}
-                onClick={() => switchView("outbox")}
-              >
-                Clinic messages{" "}
-                {pending.length > 0 && (
-                  <span className="nav-count">{pending.length}</span>
-                )}
-              </button>
-            </nav>
-            <span className="lab-name">Studio Dental Lab</span>
-            <span className="demo-pill">Demo</span>
+            <div className="breadcrumb">
+              <span>Workspace</span>
+              <ChevronRight size={12} />
+              <strong>
+                {view === "cases"
+                  ? "Cases"
+                  : view === "outbox"
+                    ? "Clinic messages"
+                    : "Demo notes"}
+              </strong>
+            </div>
+            <div className="header-date">
+              <CalendarDays size={14} />
+              {data ? formatDate(data.today, "long") : "Loading…"}
+              <span>· Kolkata</span>
+            </div>
+            <span className="demo-pill">Demo workspace</span>
           </div>
         </header>
         <main id="main-content">
@@ -237,16 +325,16 @@ export default function Dashboard() {
               </h1>
               <p className="heading-description">
                 {view === "cases"
-                  ? "Track production and agreed delivery dates."
+                  ? `${cases.length} cases across ${new Set(cases.map((c) => c.clinic)).size} clinics`
                   : view === "outbox"
                     ? "Ready-case notification emails."
                     : "What is included, and how to test it."}
               </p>
             </div>
-            <div className="today-label">
-              {data ? formatDate(data.today, "long") : "Loading…"}
-              <small>Lab day · Kolkata</small>
-            </div>
+            <button className="refresh-button" onClick={() => void load()}>
+              <RefreshCw size={14} />
+              Refresh
+            </button>
           </div>
           {error && (
             <div className="error-banner" role="alert">
@@ -279,6 +367,7 @@ export default function Dashboard() {
                       <button
                         key={key}
                         className={filter === key ? "tab active-tab" : "tab"}
+                        aria-pressed={filter === key}
                         onClick={() => setFilter(key as Filter)}
                       >
                         {label}
@@ -368,6 +457,17 @@ export default function Dashboard() {
                             </td>
                             <td>
                               <div className="clinic-cell">
+                                <span
+                                  className="clinic-monogram"
+                                  aria-hidden="true"
+                                >
+                                  {c.clinic
+                                    .split(" ")
+                                    .filter((w) => w !== "The")
+                                    .slice(0, 2)
+                                    .map((w) => w[0])
+                                    .join("")}
+                                </span>
                                 <span>
                                   <strong>{c.clinic}</strong>
                                   <small>
@@ -382,7 +482,8 @@ export default function Dashboard() {
                             <td>
                               <span className="treatment">{c.treatment}</span>
                               <small>
-                                Tooth {c.teeth}
+                                Tooth{" "}
+                                <span className="tooth-code">{c.teeth}</span>
                                 {c.priority === "rush" && (
                                   <span className="rush-tag">Rush</span>
                                 )}
@@ -616,11 +717,6 @@ export default function Dashboard() {
           <footer className="page-footer">
             <div className="footer-notes">
               <span>Fictional cases · Test email only</span>
-              <button
-                onClick={() => switchView(view === "guide" ? "cases" : "guide")}
-              >
-                {view === "guide" ? "Back to cases" : "Demo notes"}
-              </button>
             </div>
             <label className="timezone-select">
               <span>Viewing time zone</span>

@@ -113,4 +113,4 @@ The live app uses the connected durable Neon database; it does not depend on Ver
 
 **OpenAI Codex** helped turn the brief into tickets, draft the Next.js/TypeScript implementation, reason through calendar-date and transactional-outbox choices, create and run tests, inspect the app in a browser, deploy it and prepare the client/application drafts. Browser tools and command-line checks were used to verify behavior. Official Next.js, Vercel, Neon and Resend documentation was consulted. No image generation, fabricated customer quotes, invented performance results or synthetic personal work history was used.
 
-The applicant should review the code and the generated written material and describe their own review accurately in the walkthrough. AI assistance is disclosed; generated code is not evidence that Maria’s real production issue has been reproduced.
+AI assistance is disclosed. The verification notes distinguish implemented behavior and executed checks from assumptions about Maria’s original application.

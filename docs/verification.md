@@ -28,6 +28,14 @@ The following checks were executed against this prototype. This is not a review 
 - Repeated the exact LT-2043 edit to 2 November 2026 using the browser date input, clicked Save date, verified `2 Nov 2026` in the list, refreshed, and reopened the editor. The saved date remained `2026-11-02`.
 - Save confirmation includes the case identifier and full date. The updated row is highlighted and the list returns to All cases so a due-today filter does not hide the changed record.
 
+## Sidebar and visual refinement
+
+- Restored the sidebar with case navigation, clinic messages, demo notes and shortcuts to the next two unfinished cases due.
+- Opened LT-2044 through its sidebar shortcut, saved a different date through the native editor, verified it in the table and restored the original date.
+- Reopened the captured LT-2043 email and verified the saved 2 November date. Switched the viewing zone to Kiritimati and confirmed the calendar due date stayed the same.
+- The demo keeps email capture as its notification mode; WhatsApp is deferred to stay within the exercise’s scope. No Resend, Meta or Twilio account was created, and no external messages were sent.
+- Checked sidebar navigation on narrow screens, including accessible names for the icon controls. Cases and messages did not cause horizontal page overflow at 390 px and 304 px viewport settings; case-table scrolling stays inside the table region.
+
 ## Limits
 
 - No external clinic email was sent. Capture mode is the implemented test email path.

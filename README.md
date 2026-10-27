@@ -94,23 +94,3 @@ docs/client-update.md         Plain-English update to Maria
 
 Schema creation is intentionally small and automatic for this prototype. A real existing application would use versioned migrations and a reviewed legacy-date conversion rather than runtime DDL.
 
-## Deploy to Vercel
-
-Import the GitHub repository as a Next.js project, select Node.js 24, and connect a **free Neon** resource using Vercel Marketplace. Review/accept the provider terms in your own account. Ensure `DATABASE_URL` exists in each intended environment, then deploy. Keep `.env.local` and `.vercel/` out of Git.
-
-The live app uses the connected durable Neon database; it does not depend on Vercel’s temporary function filesystem. See [Vercel Marketplace storage](https://vercel.com/docs/marketplace-storage) and the [Next.js installation guide](https://nextjs.org/docs/app/getting-started/installation).
-
-## Deliberate limits / what I would change next
-
-- Start with Maria’s examples and workflow before treating the date diagnosis or dashboard design as final.
-- Confirm the lab’s zone and whether the due date is truly date-only.
-- Confirm whether quality-check approval and a staff role should be required before a case becomes ready. This demo permits the transition from any unfinished stage.
-- Live email and WhatsApp are deferred. The test outbox is the shipped notification mode.
-- Real clinic contact administration, reopening, bulk actions and date-change notifications are deferred.
-- Production authentication, automated retries, retention jobs and delivery monitoring are deferred.
-
-## AI tools used
-
-**OpenAI Codex** helped turn the brief into tickets, draft the Next.js/TypeScript implementation, reason through calendar-date and transactional-outbox choices, create and run tests, inspect the app in a browser, deploy it and prepare the client/application drafts. Browser tools and command-line checks were used to verify behavior. Official Next.js, Vercel, Neon and Resend documentation was consulted. No image generation, fabricated customer quotes, invented performance results or synthetic personal work history was used.
-
-AI assistance is disclosed. The verification notes distinguish implemented behavior and executed checks from assumptions about Maria’s original application.

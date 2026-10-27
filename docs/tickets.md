@@ -1,4 +1,4 @@
-# LabTrack — Friday demo tickets
+# LabTrack - Friday demo tickets
 
 
 

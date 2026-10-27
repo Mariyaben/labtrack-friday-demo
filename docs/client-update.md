@@ -2,15 +2,25 @@ Subject: LabTrack is ready for Friday’s demo
 
 Hi Maria,
 
-I’ve put together a working demo with a simpler case list, search and filters for the cases that need attention. You can open a case, change its due date and mark it ready for collection.
+The demo is ready for Friday.
 
-Due dates now keep the same calendar day wherever a clinic is based. For this demo, I’ve assumed the lab is in Kolkata; that determines which cases count as due today or overdue.
+What’s done
+- Due dates now stay on the same calendar day for every clinic, wherever they are. I’ve assumed a due date is a whole day and that the lab is in Kolkata.
+- Marking a case ready prepares one email for the clinic. You can preview it in Clinic messages. If it fails, the case stays ready and you can retry without a duplicate.
+- The case list is simpler, with search, a clinic filter and counts for overdue, due today and ready.
 
-Marking a case ready also prepares one email for the clinic. You can preview it in Clinic messages and download it. Messages stay in a test outbox for now. If preparing the email fails, the case stays ready and you can retry without creating a duplicate.
+What’s not done
+- WhatsApp and real email sending. These need clinic contacts, their permission, message wording and a sender address, so emails go to a test outbox for now.
+- Fixing your existing dates. I haven’t seen your real data yet, so the demo uses fictional cases. Shifting old dates blindly could break the ones that are right.
+- The dashboard is a first proposal. I’d like to see yours before changing more.
 
-I’ve left WhatsApp and real email delivery out of this short demo so we can focus on the date issue and the main workflow. We’ll need approved clinic contacts, message wording and a sender address before sending real messages. The demo uses fictional cases and does not change any existing records.
+What I need from you
+1. Two cases where the date was wrong: the agreed date, the date the clinic saw, and their country.
+2. Whether “ready” means ready to collect, dispatched or delivered, and who can mark it.
+3. Who at each clinic should get the message, whether they’ve agreed to it, and whether you want WhatsApp later.
+4. The demo time, the one thing you want the clinic group to see, and who signs it off.
 
-Before the demo, please confirm whether “ready” means ready for collection and whether due dates are whole days, rather than delivery times. Please also send two examples of the date problem, confirm the lab’s time zone, and tell me the main task you want the clinic group to see on Friday. I’d like to confirm the demo time and get your sign-off on that flow.
+If you can answer 1 and 4 first, I can adjust the demo before Friday.
 
 Thanks,
 Mariya

@@ -6,14 +6,12 @@ import {
   Layers3,
   LayoutGrid,
   RefreshCw,
-  ArrowDown,
   ArrowDownToLine,
   ArrowRight,
   Check,
   CheckCheck,
   ChevronDown,
   ChevronRight,
-  ExternalLink,
   FlaskConical,
   LoaderCircle,
   Mail as MailIcon,
@@ -25,10 +23,13 @@ import {
   eml,
   formatDate,
   LAB_TIMEZONE,
-  statuses,
   type LabCase,
   type Mail,
 } from "@/lib/domain";
+
+import { Dialog } from "./ui/dialog";
+import { CaseTable } from "./case-table";
+import { CaseStatusLabel } from "./case-status";
 
 type Data = {
   cases: LabCase[];
@@ -53,45 +54,6 @@ const zoneNames: Record<string, string> = {
   "Pacific/Kiritimati": "Kiritimati",
 };
 
-function Dialog({
-  children,
-  title,
-  close,
-}: {
-  children: React.ReactNode;
-  title: string;
-  close: () => void;
-}) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    ref.current?.showModal();
-  }, []);
-  return (
-    <dialog
-      ref={ref}
-      onCancel={(event) => {
-        event.preventDefault();
-        close();
-      }}
-      onClick={(e) => {
-        if (e.target === ref.current) close();
-      }}
-      aria-labelledby="dialog-title"
-    >
-      <div className="dialog-heading">
-        <h2 id="dialog-title">{title}</h2>
-        <button
-          className="icon-button"
-          onClick={close}
-          aria-label="Close dialog"
-        >
-          <X size={20} />
-        </button>
-      </div>
-      {children}
-    </dialog>
-  );
-}
 export default function Dashboard() {
   const [data, setData] = useState<Data | null>(null);
   const [view, setView] = useState<View>("cases");
@@ -102,6 +64,9 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
   const [busy, setBusy] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const searchInput = useRef<HTMLInputElement>(null);
+  const filterNav = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<LabCase | null>(null);
   const [message, setMessage] = useState<Mail | null>(null);
   const [date, setDate] = useState("");
@@ -109,6 +74,7 @@ export default function Dashboard() {
   const [updatedCase, setUpdatedCase] = useState<string | null>(null);
   const dueDateInput = useRef<HTMLInputElement>(null);
   async function load() {
+    setRefreshing(true);
     setError("");
     try {
       const response = await fetch("/api/workspace", { cache: "no-store" });
@@ -117,11 +83,56 @@ export default function Dashboard() {
       setData(body);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load cases.");
+    } finally {
+      setRefreshing(false);
     }
   }
   useEffect(() => {
     void load();
   }, []);
+  useEffect(() => {
+    const nav = filterNav.current;
+    if (!nav) return;
+    function revealActiveFilter() {
+      const active = nav!.querySelector<HTMLButtonElement>(
+        'button[aria-pressed="true"]',
+      );
+      if (!active) return;
+      const left = active.offsetLeft;
+      const right = left + active.offsetWidth;
+      if (left < nav!.scrollLeft)
+        nav!.scrollTo({ left: Math.max(0, left - 8) });
+      else if (right > nav!.scrollLeft + nav!.clientWidth)
+        nav!.scrollTo({ left: right - nav!.clientWidth + 8 });
+    }
+    revealActiveFilter();
+    const observer = new ResizeObserver(revealActiveFilter);
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, [filter, view, data !== null]);
+  useEffect(() => {
+    function focusSearch(event: KeyboardEvent) {
+      const target = event.target;
+      if (
+        view !== "cases" ||
+        event.key !== "/" ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        document.querySelector("dialog[open]")
+      )
+        return;
+      if (
+        target instanceof HTMLElement &&
+        target.closest('input, textarea, select, [contenteditable="true"]')
+      )
+        return;
+      event.preventDefault();
+      searchInput.current?.focus();
+    }
+    document.addEventListener("keydown", focusSearch);
+    return () => document.removeEventListener("keydown", focusSearch);
+  }, [view]);
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(""), 5500);
@@ -183,6 +194,7 @@ export default function Dashboard() {
   const currentMail =
     currentCase && messages.find((m) => m.case_id === currentCase.id);
   function openCase(c: LabCase) {
+    setError("");
     setSelected(c);
     setDate(c.due_date);
     setSimulateFailure(false);
@@ -203,6 +215,9 @@ export default function Dashboard() {
   }
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">
+        Skip to case workspace
+      </a>
       <aside className="sidebar">
         <a href="/" className="brand" aria-label="LabTrack home">
           <span className="brand-symbol">
@@ -313,27 +328,44 @@ export default function Dashboard() {
             <span className="demo-pill">Demo workspace</span>
           </div>
         </header>
-        <main id="main-content">
+        <main id="main-content" tabIndex={-1}>
           <div className="page-heading">
             <div>
-              <h1>
-                {view === "cases"
-                  ? "Cases"
-                  : view === "outbox"
-                    ? "Clinic messages"
-                    : "Demo notes"}
-              </h1>
+              <div className="title-row">
+                <h1>
+                  {view === "cases"
+                    ? "Cases"
+                    : view === "outbox"
+                      ? "Clinic messages"
+                      : "Demo notes"}
+                </h1>
+                {view === "cases" && data && (
+                  <span
+                    className="page-total"
+                    aria-label={`${cases.length} total cases`}
+                  >
+                    {cases.length}
+                  </span>
+                )}
+              </div>
               <p className="heading-description">
                 {view === "cases"
-                  ? `${cases.length} cases across ${new Set(cases.map((c) => c.clinic)).size} clinics`
+                  ? `Production queue · ${new Set(cases.map((c) => c.clinic)).size} clinics`
                   : view === "outbox"
                     ? "Ready-case notification emails."
                     : "What is included, and how to test it."}
               </p>
             </div>
-            <button className="refresh-button" onClick={() => void load()}>
-              <RefreshCw size={14} />
-              Refresh
+            <button
+              className="refresh-button"
+              disabled={refreshing}
+              onClick={() => void load()}
+            >
+              <RefreshCw
+                size={14}
+                className={refreshing ? "spin" : undefined}
+              />
+              {refreshing ? "Refreshing…" : "Refresh"}
             </button>
           </div>
           {error && (
@@ -346,15 +378,33 @@ export default function Dashboard() {
           )}
           {!data && !error && (
             <div className="loading-state">
-              <LoaderCircle className="spin" size={25} />
-              <p>Loading cases…</p>
+              <span className="sr-only" role="status">
+                Loading your cases…
+              </span>
+              <div className="loading-lines" aria-hidden="true">
+                {[0, 1, 2].map((i) => (
+                  <div key={i}>
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           {view === "cases" && data && (
             <>
-              <section className="case-panel" aria-label="Case list">
+              <section
+                className="case-panel"
+                aria-label="Case list"
+                aria-busy={refreshing}
+              >
                 <div className="filter-row">
-                  <div className="tabs" aria-label="Filter cases">
+                  <div
+                    ref={filterNav}
+                    className="tabs"
+                    aria-label="Filter cases"
+                  >
                     {(
                       [
                         ["all", "All cases", cases.length],
@@ -387,157 +437,43 @@ export default function Dashboard() {
                     <label className="search">
                       <Search size={15} />
                       <input
+                        ref={searchInput}
                         aria-label="Search cases"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search case, clinic or restoration"
+                        placeholder="Search cases, clinics or restorations"
+                        onKeyDown={(event) => {
+                          if (event.key === "Escape") setQuery("");
+                        }}
                       />
+                      <kbd aria-hidden="true">/</kbd>
                     </label>
                     <label className="clinic-select">
+                      <span className="clinic-filter-label">Clinic</span>
                       <select
                         aria-label="Filter by clinic"
                         value={clinic}
                         onChange={(e) => setClinic(e.target.value)}
                       >
                         <option value="all">All clinics</option>
-                        {Array.from(new Set(cases.map((c) => c.clinic))).map(
-                          (c) => (
+                        {Array.from(new Set(cases.map((c) => c.clinic)))
+                          .sort()
+                          .map((c) => (
                             <option key={c}>{c}</option>
-                          ),
-                        )}
+                          ))}
                       </select>
                       <ChevronDown size={13} />
                     </label>
                   </div>
                 </div>
-                <div
-                  className="table-scroll"
-                  tabIndex={0}
-                  role="region"
-                  aria-label="Cases. Scroll horizontally on smaller screens."
-                >
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Case</th>
-                        <th>Clinic</th>
-                        <th>Restoration</th>
-                        <th>
-                          Due date <ArrowDown size={12} />{" "}
-                          <span title="Calendar date, unchanged across time zones">
-                            ⓘ
-                          </span>
-                        </th>
-                        <th>Status</th>
-                        <th>
-                          <span className="sr-only">Action</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filtered.map((c) => {
-                        const overdue =
-                          c.status !== "ready" && c.due_date < data.today;
-                        const mail = messages.find((m) => m.case_id === c.id);
-                        return (
-                          <tr
-                            key={c.id}
-                            className={
-                              updatedCase === c.id ? "row-updated" : undefined
-                            }
-                          >
-                            <td>
-                              <button
-                                className="case-id"
-                                onClick={() => openCase(c)}
-                              >
-                                {c.code}
-                              </button>
-                              <small>{c.reference}</small>
-                            </td>
-                            <td>
-                              <div className="clinic-cell">
-                                <span
-                                  className="clinic-monogram"
-                                  aria-hidden="true"
-                                >
-                                  {c.clinic
-                                    .split(" ")
-                                    .filter((w) => w !== "The")
-                                    .slice(0, 2)
-                                    .map((w) => w[0])
-                                    .join("")}
-                                </span>
-                                <span>
-                                  <strong>{c.clinic}</strong>
-                                  <small>
-                                    {c.country}{" "}
-                                    <span className="dot-separator">·</span>{" "}
-                                    {zoneNames[c.clinic_timezone] ||
-                                      "Stockholm"}
-                                  </small>
-                                </span>
-                              </div>
-                            </td>
-                            <td>
-                              <span className="treatment">{c.treatment}</span>
-                              <small>
-                                Tooth{" "}
-                                <span className="tooth-code">{c.teeth}</span>
-                                {c.priority === "rush" && (
-                                  <span className="rush-tag">Rush</span>
-                                )}
-                              </small>
-                            </td>
-                            <td>
-                              <span
-                                className={`due-date ${overdue ? "overdue" : ""}`}
-                              >
-                                {formatDate(c.due_date)}{" "}
-                                {c.due_date.slice(0, 4)}
-                                {overdue && <span className="overdue-dot" />}
-                              </span>
-                              {(overdue ||
-                                updatedCase === c.id ||
-                                (c.due_date === data.today &&
-                                  c.status !== "ready")) && (
-                                <small className={overdue ? "overdue" : ""}>
-                                  {overdue
-                                    ? "Overdue"
-                                    : updatedCase === c.id
-                                      ? "Date updated"
-                                      : "Today"}
-                                </small>
-                              )}
-                            </td>
-                            <td>
-                              <span
-                                className={`status-badge status-${c.status}`}
-                              >
-                                <span />
-                                {statuses[c.status]}
-                              </span>
-                              {mail && mail.status !== "captured" && (
-                                <small className="overdue">
-                                  Email needs retry
-                                </small>
-                              )}
-                            </td>
-                            <td>
-                              <button
-                                className="row-action"
-                                onClick={() => openCase(c)}
-                                aria-label={`Open ${c.code}`}
-                              >
-                                Open <ChevronRight size={14} />
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                <CaseTable
+                  cases={filtered}
+                  messages={messages}
+                  today={data.today}
+                  updatedCase={updatedCase}
+                  selectedCaseId={selected?.id}
+                  onOpen={openCase}
+                />
                 {filtered.length === 0 && (
                   <div className="empty-state">
                     <Search size={25} />
@@ -555,7 +491,12 @@ export default function Dashboard() {
                     </button>
                   </div>
                 )}
-                <div className="table-footer">
+                <div
+                  className="table-footer"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
                   <span>
                     Showing {filtered.length} of {cases.length} cases
                   </span>
@@ -643,11 +584,11 @@ export default function Dashboard() {
                         </button>
                       ) : (
                         <button
-                          className="icon-button"
+                          className="secondary-button"
                           onClick={() => setMessage(m)}
                           aria-label={`Preview email for ${m.case_code}`}
                         >
-                          <ExternalLink size={17} />
+                          Preview <ChevronRight size={13} />
                         </button>
                       )}
                     </article>
@@ -765,10 +706,7 @@ export default function Dashboard() {
             <span>
               {currentCase.treatment} · Tooth {currentCase.teeth}
             </span>
-            <span className={`status-badge status-${currentCase.status}`}>
-              <span />
-              {statuses[currentCase.status]}
-            </span>
+            <CaseStatusLabel status={currentCase.status} />
           </div>
           <div className="detail-block">
             <span className="detail-label">CLINIC</span>

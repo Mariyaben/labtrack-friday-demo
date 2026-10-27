@@ -1,5 +1,7 @@
 # Verification · 27 October 2026
 
+The latest interface audit, reusable components and desktop/mobile regression checks are recorded in [design-refinement.md](design-refinement.md).
+
 The following checks were executed against this prototype. This is not a review of Maria’s original application or a claim of production readiness.
 
 ## Automated

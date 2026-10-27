@@ -104,7 +104,7 @@ p {
 .brand-symbol {
   display: flex;
   align-items: center;
-  color: #b4c8b4;
+  color: #ffffff;
 }
 .brand-symbol svg {
   width: 23px;
@@ -116,7 +116,7 @@ p {
   gap: 5px;
   margin: 30px 10px 27px;
   padding-bottom: 22px;
-  border-bottom: 1px solid #3a4f42;
+  border-bottom: 1px solid #ffffff33;
 }
 .workspace-caption {
   font-size: 10px;
@@ -126,7 +126,7 @@ p {
 .sidebar-workspace strong {
   font-size: 13px;
   font-weight: 500;
-  color: #e2e9dc;
+  color: #ffffff;
 }
 .workspace-location {
   font-size: 11.5px;
@@ -160,27 +160,27 @@ p {
 }
 .nav-item > svg {
   flex: none;
-  color: #a6bca9;
+  color: #e0f4f7;
   width: 16px;
   height: 16px;
 }
 .nav-item:hover:not(:disabled) {
-  background: #2c4336;
+  background: #00788d;
   color: #f2f6ec;
 }
 .nav-item.active {
-  border-left-color: #8fbab1;
-  background: #2a4540;
+  border-left-color: #ffffff;
+  background: #006f83;
   color: #f1f5e9;
   font-weight: 500;
 }
 .nav-item.active > svg {
-  color: #b7d2ca;
+  color: #ffffff;
 }
 .nav-count {
   margin-left: auto;
   font: 11px var(--font-mono);
-  color: #b1c6a8;
+  color: #e0f4f7;
 }
 .pending-count {
   color: #e2bd88;
@@ -192,7 +192,7 @@ p {
 .sidebar-queue {
   margin: 30px 10px 0;
   padding-top: 21px;
-  border-top: 1px solid #3a4f42;
+  border-top: 1px solid #ffffff33;
 }
 .sidebar-queue h2 {
   margin: 0 0 8px;
@@ -213,11 +213,11 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  color: #d4dfc9;
+  color: #ffffff;
   font: 11px var(--font-mono);
 }
 .queue-date {
-  color: #b2c4a2;
+  color: #e0f4f7;
   font: 10px var(--font-ui);
 }
 .queue-date.late {
@@ -230,7 +230,7 @@ p {
   white-space: nowrap;
   margin-top: 5px;
   font-size: 11.5px;
-  color: #a6bda3;
+  color: #e0f4f7;
 }
 .sidebar-queue > button:hover .queue-case {
   text-decoration: underline;
@@ -249,12 +249,12 @@ p {
   gap: 8px;
   margin-top: 15px;
   padding: 17px 10px;
-  border-top: 1px solid #3a4f42;
-  color: #a0b399;
+  border-top: 1px solid #ffffff33;
+  color: #e0f4f7;
   font-size: 10px;
 }
 .sidebar-footnote > span {
-  color: #93ab87;
+  color: #e0f4f7;
 }
 
 .main-shell {
@@ -684,6 +684,9 @@ main {
   white-space: nowrap;
   color: var(--muted);
 }
+.production-status {
+  font-weight: 600;
+}
 .production-status > svg {
   flex: none;
 }
@@ -693,8 +696,8 @@ main {
 .production-status[data-status="in_progress"] {
   color: var(--working);
 }
-.production-status[data-status="quality_check"] > svg {
-  color: var(--brand);
+.production-status[data-status="quality_check"] {
+  color: var(--quality);
 }
 .production-status[data-status="ready"] {
   color: var(--ready);

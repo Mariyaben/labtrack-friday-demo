@@ -1,28 +1,19 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import {
-  Activity,
   ArrowDown,
   ArrowDownToLine,
   ArrowRight,
-  Bell,
-  CalendarDays,
   Check,
   CheckCheck,
   ChevronDown,
   ChevronRight,
-  CircleHelp,
-  Clock3,
   ExternalLink,
   FlaskConical,
-  Globe2,
-  Inbox,
-  LayoutGrid,
   LoaderCircle,
   Mail as MailIcon,
   Search,
   ShieldCheck,
-  Stethoscope,
   X,
 } from "lucide-react";
 import {
@@ -110,6 +101,8 @@ export default function Dashboard() {
   const [message, setMessage] = useState<Mail | null>(null);
   const [date, setDate] = useState("");
   const [simulateFailure, setSimulateFailure] = useState(false);
+  const [updatedCase, setUpdatedCase] = useState<string | null>(null);
+  const dueDateInput = useRef<HTMLInputElement>(null);
   async function load() {
     setError("");
     try {
@@ -145,6 +138,10 @@ export default function Dashboard() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
       setData(result);
+      if ("action" in body && body.action === "due-date") {
+        setFilter("all");
+        setUpdatedCase("caseId" in body ? String(body.caseId) : null);
+      }
       setSelected(null);
       setToast(success);
       return true;
@@ -201,125 +198,55 @@ export default function Dashboard() {
   }
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <a className="brand" href="/" aria-label="LabTrack home">
-          <span className="brand-mark">
-            <Activity size={25} strokeWidth={2.7} />
-          </span>
-          labtrack<span className="brand-dot">.</span>
-        </a>
-        <div className="workspace-label">
-          <span className="lab-avatar">
-            <Stethoscope size={18} />
-          </span>
-          <span>
-            <strong>Studio Dental Lab</strong>
-            <small>Lab workspace</small>
-          </span>
-          <ChevronDown size={14} />
-        </div>
-        <p className="nav-caption">WORKSPACE</p>
-        <nav aria-label="Main navigation">
-          <button
-            className={view === "cases" ? "nav-item active" : "nav-item"}
-            onClick={() => switchView("cases")}
-          >
-            <LayoutGrid size={18} />
-            Case overview
-            <span className="nav-count">{cases.length || "—"}</span>
-          </button>
-          <button
-            className={view === "outbox" ? "nav-item active" : "nav-item"}
-            onClick={() => switchView("outbox")}
-          >
-            <MailIcon size={18} />
-            Clinic messages
-            {pending.length > 0 && (
-              <span className="nav-count warning-count">{pending.length}</span>
-            )}
-          </button>
-        </nav>
-
-        <div className="sidebar-bottom">
-          <button
-            className={view === "guide" ? "nav-item active" : "nav-item"}
-            onClick={() => switchView("guide")}
-          >
-            <CircleHelp size={18} />
-            Demo guide
-          </button>
-          <div className="profile">
-            <span className="profile-avatar">M</span>
-            <span>
-              <strong>Maria</strong>
-              <small>Lab owner · demo</small>
-            </span>
-            <span className="online-dot" />
-          </div>
-        </div>
-      </aside>
       <div className="main-shell">
         <header className="topbar">
-          <div className="breadcrumb">
-            Workspace <ChevronRight size={13} />
-            <span>
-              {view === "cases"
-                ? "Case overview"
-                : view === "outbox"
-                  ? "Clinic messages"
-                  : "Demo guide"}
-            </span>
-          </div>
-          <div className="topbar-right">
-            <span className="demo-pill">
-              <span />
-              Demo workspace
-            </span>
-            <button
-              className="icon-button notification-button"
-              aria-label="Open clinic messages"
-              onClick={() => switchView("outbox")}
-            >
-              <Bell size={19} />
-              {pending.length > 0 && <span />}
-            </button>
-            <span className="topbar-avatar">M</span>
+          <div className="header-inner">
+            <a href="/" className="brand" aria-label="LabTrack home">
+              LabTrack
+            </a>
+            <nav aria-label="Main navigation">
+              <button
+                className={view === "cases" ? "nav-item active" : "nav-item"}
+                onClick={() => switchView("cases")}
+              >
+                Cases
+              </button>
+              <button
+                className={view === "outbox" ? "nav-item active" : "nav-item"}
+                onClick={() => switchView("outbox")}
+              >
+                Clinic messages{" "}
+                {pending.length > 0 && (
+                  <span className="nav-count">{pending.length}</span>
+                )}
+              </button>
+            </nav>
+            <span className="lab-name">Studio Dental Lab</span>
+            <span className="demo-pill">Demo</span>
           </div>
         </header>
         <main id="main-content">
           <div className="page-heading">
             <div>
-              <p className="eyebrow">A CLEARER DAY IN THE LAB</p>
               <h1>
                 {view === "cases"
-                  ? "Your cases, at a glance."
+                  ? "Cases"
                   : view === "outbox"
-                    ? "Keep clinics in the loop."
-                    : "Small details. Better days."}
+                    ? "Clinic messages"
+                    : "Demo notes"}
               </h1>
               <p className="heading-description">
                 {view === "cases"
-                  ? "Your cases, your next steps. All in one calm place."
+                  ? "Track production and agreed delivery dates."
                   : view === "outbox"
-                    ? "Ready-case emails, with a clear record of every message."
-                    : "A quick guide to the Friday demo and the decisions behind it."}
+                    ? "Ready-case notification emails."
+                    : "What is included, and how to test it."}
               </p>
             </div>
             <div className="today-label">
-              <CalendarDays size={17} />
-              {data ? formatDate(data.today, "long") : "Loading today…"}
+              {data ? formatDate(data.today, "long") : "Loading…"}
               <small>Lab day · Kolkata</small>
             </div>
-          </div>
-          <div className="demo-banner">
-            <FlaskConical size={17} />
-            <span>
-              <strong>Made for a test drive.</strong> Fictional cases, your own
-              workspace. Emails stay in the test outbox.
-            </span>
-            <button onClick={() => switchView("guide")}>
-              How it works <ArrowRight size={14} />
-            </button>
           </div>
           {error && (
             <div className="error-banner" role="alert">
@@ -332,94 +259,38 @@ export default function Dashboard() {
           {!data && !error && (
             <div className="loading-state">
               <LoaderCircle className="spin" size={25} />
-              <p>Getting your workbench ready…</p>
+              <p>Loading cases…</p>
             </div>
           )}
           {view === "cases" && data && (
             <>
-              <section className="stats-grid" aria-label="Case summary">
-                {[
-                  {
-                    label: "Active cases",
-                    count: cases.length - ready.length,
-                    icon: <Inbox size={19} />,
-                    detail: "Moving through the lab",
-                    choice: "active",
-                    color: "neutral",
-                  },
-                  {
-                    label: "Need attention",
-                    count: attention.length,
-                    icon: <Clock3 size={19} />,
-                    detail: "Past the agreed due date",
-                    choice: "attention",
-                    color: "orange",
-                  },
-                  {
-                    label: "Due today",
-                    count: dueToday.length,
-                    icon: <CalendarDays size={19} />,
-                    detail: "A little focus for today",
-                    choice: "today",
-                    color: "purple",
-                  },
-                  {
-                    label: "Ready for collection",
-                    count: ready.length,
-                    icon: <CheckCheck size={19} />,
-                    detail: "Good to go. Clinics in the loop.",
-                    choice: "ready",
-                    color: "green",
-                  },
-                ].map((s) => (
-                  <button
-                    key={s.label}
-                    className={`stat-card ${s.color} ${filter === s.choice ? "stat-selected" : ""}`}
-                    onClick={() => setFilter(s.choice as Filter)}
-                  >
-                    <span className="stat-top">
-                      {s.label}
-                      <span className="stat-icon">{s.icon}</span>
-                    </span>
-                    <strong>{s.count.toString().padStart(2, "0")}</strong>
-                    <span className="stat-detail">{s.detail}</span>
-                  </button>
-                ))}
-              </section>
-              <section className="case-panel" aria-labelledby="cases-heading">
-                <div className="panel-heading">
-                  <div>
-                    <h2 id="cases-heading">
-                      Your workbench <span>{cases.length} cases</span>
-                    </h2>
-                    <p>
-                      {filter === "active"
-                        ? "Unfinished cases, ordered by agreed due date."
-                        : "The next right thing, without the noise."}
-                    </p>
-                  </div>
-                  <div className="date-promise">
-                    <ShieldCheck size={15} />
-                    Same due date. Everywhere.
-                  </div>
-                </div>
+              <section className="case-panel" aria-label="Case list">
                 <div className="filter-row">
                   <div className="tabs" aria-label="Filter cases">
-                    {[
-                      ["all", "All cases"],
-                      ["attention", "Needs attention"],
-                      ["today", "Due today"],
-                      ["ready", "Ready"],
-                    ].map(([key, label]) => (
+                    {(
+                      [
+                        ["all", "All cases", cases.length],
+                        ["active", "In the lab", cases.length - ready.length],
+                        ["attention", "Overdue", attention.length],
+                        ["today", "Due today", dueToday.length],
+                        ["ready", "Ready", ready.length],
+                      ] as const
+                    ).map(([key, label, count]) => (
                       <button
                         key={key}
                         className={filter === key ? "tab active-tab" : "tab"}
                         onClick={() => setFilter(key as Filter)}
                       >
                         {label}
-                        {key === "attention" && attention.length > 0 && (
-                          <span className="tab-dot" />
-                        )}
+                        <span
+                          className={
+                            key === "attention" && count > 0
+                              ? "filter-count overdue-count"
+                              : "filter-count"
+                          }
+                        >
+                          {count}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -430,7 +301,7 @@ export default function Dashboard() {
                         aria-label="Search cases"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search cases…"
+                        placeholder="Search case, clinic or restoration"
                       />
                     </label>
                     <label className="clinic-select">
@@ -459,18 +330,16 @@ export default function Dashboard() {
                   <table>
                     <thead>
                       <tr>
+                        <th>Case</th>
+                        <th>Clinic</th>
+                        <th>Restoration</th>
                         <th>
-                          CASE <ArrowDown size={12} />
-                        </th>
-                        <th>CLINIC</th>
-                        <th>RESTORATION</th>
-                        <th>
-                          DUE DATE{" "}
+                          Due date <ArrowDown size={12} />{" "}
                           <span title="Calendar date, unchanged across time zones">
                             ⓘ
                           </span>
                         </th>
-                        <th>STATUS</th>
+                        <th>Status</th>
                         <th>
                           <span className="sr-only">Action</span>
                         </th>
@@ -482,7 +351,12 @@ export default function Dashboard() {
                           c.status !== "ready" && c.due_date < data.today;
                         const mail = messages.find((m) => m.case_id === c.id);
                         return (
-                          <tr key={c.id}>
+                          <tr
+                            key={c.id}
+                            className={
+                              updatedCase === c.id ? "row-updated" : undefined
+                            }
+                          >
                             <td>
                               <button
                                 className="case-id"
@@ -494,16 +368,6 @@ export default function Dashboard() {
                             </td>
                             <td>
                               <div className="clinic-cell">
-                                <span
-                                  className={`clinic-avatar clinic-${c.country.toLowerCase()}`}
-                                >
-                                  {c.clinic
-                                    .split(" ")
-                                    .filter((w) => w !== "The")
-                                    .slice(0, 2)
-                                    .map((w) => w[0])
-                                    .join("")}
-                                </span>
                                 <span>
                                   <strong>{c.clinic}</strong>
                                   <small>
@@ -528,18 +392,22 @@ export default function Dashboard() {
                               <span
                                 className={`due-date ${overdue ? "overdue" : ""}`}
                               >
-                                {formatDate(c.due_date)}
+                                {formatDate(c.due_date)}{" "}
+                                {c.due_date.slice(0, 4)}
                                 {overdue && <span className="overdue-dot" />}
                               </span>
-                              <small className={overdue ? "overdue" : ""}>
-                                {overdue
-                                  ? "Overdue"
-                                  : c.due_date === data.today
-                                    ? "Today"
-                                    : c.due_date > data.today
-                                      ? "Upcoming"
-                                      : "Completed"}
-                              </small>
+                              {(overdue ||
+                                updatedCase === c.id ||
+                                (c.due_date === data.today &&
+                                  c.status !== "ready")) && (
+                                <small className={overdue ? "overdue" : ""}>
+                                  {overdue
+                                    ? "Overdue"
+                                    : updatedCase === c.id
+                                      ? "Date updated"
+                                      : "Today"}
+                                </small>
+                              )}
                             </td>
                             <td>
                               <span
@@ -560,7 +428,7 @@ export default function Dashboard() {
                                 onClick={() => openCase(c)}
                                 aria-label={`Open ${c.code}`}
                               >
-                                <ChevronRight size={17} />
+                                Open <ChevronRight size={14} />
                               </button>
                             </td>
                           </tr>
@@ -590,72 +458,9 @@ export default function Dashboard() {
                   <span>
                     Showing {filtered.length} of {cases.length} cases
                   </span>
-                  <span>
-                    <span className="green-dot" />
-                    Saved in your demo workspace
-                  </span>
+                  <span>Sorted by due date</span>
                 </div>
               </section>
-              <div className="bottom-grid">
-                <section className="timezone-card">
-                  <span className="feature-icon">
-                    <Globe2 size={21} />
-                  </span>
-                  <div>
-                    <h3>Across borders. On the same page.</h3>
-                    <p>
-                      Switch your viewing location. Every case keeps its agreed
-                      due date.
-                    </p>
-                    <label className="timezone-select">
-                      <Globe2 size={13} />
-                      <select
-                        aria-label="Viewing time zone"
-                        value={zone}
-                        onChange={(e) => {
-                          setZone(e.target.value);
-                          setToast(
-                            `Viewing from ${zoneNames[e.target.value]}. Calendar due dates stay the same.`,
-                          );
-                        }}
-                      >
-                        {zones.map((z) => (
-                          <option key={z} value={z}>
-                            {zoneNames[z]} · {z}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown size={13} />
-                    </label>
-                    <small className="timezone-explanation">
-                      Overdue and “today” use the lab’s day in Kolkata.
-                    </small>
-                  </div>
-                  <ShieldCheck
-                    className="timezone-art"
-                    size={62}
-                    strokeWidth={1}
-                  />
-                </section>
-                <section className="ready-card">
-                  <span className="feature-icon warm">
-                    <MailIcon size={21} />
-                  </span>
-                  <div>
-                    <h3>Ready means they’ll know.</h3>
-                    <p>
-                      Mark a case ready. We’ll prepare the clinic’s email and
-                      keep a record.
-                    </p>
-                    <button
-                      className="text-button"
-                      onClick={() => switchView("outbox")}
-                    >
-                      View test outbox <ArrowRight size={14} />
-                    </button>
-                  </div>
-                </section>
-              </div>
             </>
           )}
           {view === "outbox" && data && (
@@ -681,7 +486,7 @@ export default function Dashboard() {
               {messages.length === 0 ? (
                 <div className="empty-state large-empty">
                   <MailIcon size={35} />
-                  <h3>A quieter inbox starts here.</h3>
+                  <h3>No messages yet</h3>
                   <p>
                     Open a case and mark it ready to capture the clinic’s email.
                   </p>
@@ -696,11 +501,6 @@ export default function Dashboard() {
                 <div className="message-list">
                   {messages.map((m) => (
                     <article className="message-row" key={m.id}>
-                      <span
-                        className={`message-icon ${m.status === "failed" ? "failed-icon" : ""}`}
-                      >
-                        <MailIcon size={20} />
-                      </span>
                       <div className="message-summary">
                         <button onClick={() => setMessage(m)}>
                           {m.subject}
@@ -759,7 +559,7 @@ export default function Dashboard() {
             <div className="guide-grid">
               <section className="case-panel guide-card">
                 <span className="guide-number">01</span>
-                <h2>A date you can trust</h2>
+                <h2>Due dates</h2>
                 <p>
                   A case due on 30 October is due on 30 October in every
                   country. Dates are stored as calendar dates. Changing the
@@ -773,7 +573,7 @@ export default function Dashboard() {
               </section>
               <section className="case-panel guide-card">
                 <span className="guide-number">02</span>
-                <h2>One ready case. One email.</h2>
+                <h2>Ready notifications</h2>
                 <p>
                   Open any case, then mark it ready. The case change and email
                   request are saved together. Repeated clicks create one
@@ -787,7 +587,7 @@ export default function Dashboard() {
               </section>
               <section className="case-panel guide-card">
                 <span className="guide-number">03</span>
-                <h2>A focused Friday demo</h2>
+                <h2>Included in this demo</h2>
                 <p>
                   Search, filter and edit due dates. Work from the most urgent
                   cases to the next. Preview and download the captured email.
@@ -800,7 +600,7 @@ export default function Dashboard() {
               </section>
               <section className="case-panel guide-card">
                 <span className="guide-number">04</span>
-                <h2>Your own test drive</h2>
+                <h2>Demo data</h2>
                 <p>
                   A private browser cookie identifies your fictional dataset.
                   Your edits persist when you refresh and won’t change another
@@ -814,13 +614,34 @@ export default function Dashboard() {
             </div>
           )}
           <footer className="page-footer">
-            <span>
-              <Activity size={14} />
-              Crafted for a calmer workflow.
-            </span>
-            <span>
-              LabTrack <span className="footer-dot">·</span> Friday demo
-            </span>
+            <div className="footer-notes">
+              <span>Fictional cases · Test email only</span>
+              <button
+                onClick={() => switchView(view === "guide" ? "cases" : "guide")}
+              >
+                {view === "guide" ? "Back to cases" : "Demo notes"}
+              </button>
+            </div>
+            <label className="timezone-select">
+              <span>Viewing time zone</span>
+              <select
+                aria-label="Viewing time zone"
+                value={zone}
+                onChange={(e) => {
+                  setZone(e.target.value);
+                  setToast(
+                    `Viewing from ${zoneNames[e.target.value]}. Calendar due dates stay the same.`,
+                  );
+                }}
+              >
+                {zones.map((z) => (
+                  <option key={z} value={z}>
+                    {zoneNames[z]} · {z}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={13} />
+            </label>
           </footer>
         </main>
       </div>
@@ -864,14 +685,18 @@ export default function Dashboard() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
+              // Read the submitted native input, independently of draft state.
+              const submittedDate = String(
+                new FormData(e.currentTarget).get("dueDate") || "",
+              );
               void mutate(
                 {
                   action: "due-date",
                   caseId: currentCase.id,
-                  dueDate: date,
+                  dueDate: submittedDate,
                   version: currentCase.version,
                 },
-                "Due date saved. The same calendar date in every country.",
+                `${currentCase.code}: due date saved as ${formatDate(submittedDate, "long")}.`,
               );
             }}
           >
@@ -880,32 +705,37 @@ export default function Dashboard() {
             </label>
             <div className="date-edit">
               <input
+                ref={dueDateInput}
                 id="due-date"
+                name="dueDate"
                 type="date"
                 required
                 min="2000-01-01"
                 max="2100-12-31"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                defaultValue={currentCase.due_date}
+                onInput={(e) => setDate(e.currentTarget.value)}
+                onChange={(e) => setDate(e.currentTarget.value)}
               />
               <button
                 className="secondary-button"
                 type="submit"
-                disabled={busy || date === currentCase.due_date}
+                disabled={busy}
               >
                 Save date
               </button>
             </div>
             <p className="field-hint">
               <ShieldCheck size={13} />
-              Calendar date · unchanged across time zones
+              {date !== currentCase.due_date
+                ? "Unsaved change. Select Save date to apply it."
+                : "Select a date, then Save date. It stays the same for every clinic."}
             </p>
           </form>
           <div className="ready-section">
             <h3>
               {currentCase.status === "ready"
                 ? "Ready for collection"
-                : "Finished in the lab?"}
+                : "Complete this case"}
             </h3>
             <p>
               {currentCase.status === "ready"
@@ -922,12 +752,18 @@ export default function Dashboard() {
                     checked={simulateFailure}
                     onChange={(e) => setSimulateFailure(e.target.checked)}
                   />
-                  Simulate an email failure <span>Test recovery</span>
+                  Simulate an email failure
                 </label>
                 <button
                   className="primary-button full-width"
                   disabled={busy || date !== currentCase.due_date}
-                  onClick={() =>
+                  onClick={() => {
+                    if (dueDateInput.current?.value !== currentCase.due_date) {
+                      setError(
+                        "Save the new due date before marking this case ready.",
+                      );
+                      return;
+                    }
                     void mutate(
                       {
                         action: "ready",
@@ -935,10 +771,10 @@ export default function Dashboard() {
                         simulateFailure,
                       },
                       simulateFailure
-                        ? "Case is ready. Email failed safely; retry it from Clinic messages."
-                        : "Case is ready. Clinic email captured in the test outbox.",
-                    )
-                  }
+                        ? `${currentCase.code} is ready. Email failed; retry in Clinic messages.`
+                        : `${currentCase.code} is ready. Clinic email captured.`,
+                    );
+                  }}
                 >
                   {busy ? (
                     <LoaderCircle size={17} className="spin" />

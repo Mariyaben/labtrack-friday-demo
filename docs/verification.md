@@ -18,8 +18,15 @@ The following checks were executed against this prototype. This is not a review 
 - Downloaded the `.eml` file and inspected its headers and plain-text body.
 - Simulated a failure on another case, observed a failed message while the case stayed ready, and retried successfully.
 - Verified the no-results search state and Clear filters action.
-- Verified that the active-cases summary filters out ready cases.
+- Verified that the “In the lab” filter excludes ready cases.
 - Found and fixed a mobile overflow caused by the visually hidden table header. Recheck: document scroll width and client width both 375 CSS pixels; the table scrolls within its own region.
+
+## Native date editor regression
+
+- Reproduced a client-side failure: the native input displayed `2026-11-02` for LT-2043 while the Save date button remained disabled. The earlier API tests did not cover this browser interaction.
+- The form now reads the submitted native value through `FormData`, observes native input events for the unsaved indicator, and keeps Save date available. Marking ready is blocked while the date is unsaved.
+- Repeated the exact LT-2043 edit to 2 November 2026 using the browser date input, clicked Save date, verified `2 Nov 2026` in the list, refreshed, and reopened the editor. The saved date remained `2026-11-02`.
+- Save confirmation includes the case identifier and full date. The updated row is highlighted and the list returns to All cases so a due-today filter does not hide the changed record.
 
 ## Limits
 

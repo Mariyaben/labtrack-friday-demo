@@ -98,6 +98,20 @@ export function CaseTable({
                 className="case-row"
                 data-updated={updatedCase === item.id || undefined}
                 data-active={selectedCaseId === item.id || undefined}
+                onClick={(event) => {
+                  // Keep native table semantics and the existing keyboard actions.
+                  // Clicking a nested control must not open the case a second time.
+                  if (event.defaultPrevented) return;
+                  if (
+                    event.target instanceof Element &&
+                    event.target.closest(
+                      'button, a, input, select, textarea, label, [role="button"]',
+                    )
+                  )
+                    return;
+                  if (window.getSelection()?.toString()) return;
+                  onOpen(item);
+                }}
               >
                 <td>
                   <button className="case-id" onClick={() => onOpen(item)}>
@@ -139,7 +153,7 @@ export function CaseTable({
                     aria-label={`Open ${item.code}`}
                     onClick={() => onOpen(item)}
                   >
-                    Open <ChevronRight size={13} aria-hidden="true" />
+                    Open <ChevronRight size={14} aria-hidden="true" />
                   </button>
                 </td>
               </tr>

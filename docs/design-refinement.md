@@ -7,7 +7,7 @@ The existing app had a coherent forest palette, but too much text inherited a gr
 ## Implemented design
 
 - Kept the dark sidebar, reduced its width and used a restrained leading rule for active navigation. Preserved Cases, Clinic messages, Demo notes and the real next-due case shortcuts.
-- Kept IBM Plex Sans for the interface and IBM Plex Mono for case identifiers and tooth references. Primary content now uses charcoal; forest is reserved for navigation, focus, updates and ready states.
+- Kept IBM Plex Sans for the interface and IBM Plex Mono for case identifiers and tooth references. Primary content uses charcoal, with a restrained muted-teal brand accent for active states, focus and important actions.
 - Replaced the outer rounded case card with a flat workspace: compact title/count, status navigation, integrated search/filter controls and a ruled table.
 - Gave clinic names and agreed dates greater prominence than reference and location metadata. Dates and counts use tabular numerals. Urgency is explicitly labelled, with restrained rust accents.
 - Replaced stage pills with reusable text-and-symbol indicators for the actual model: Received, In progress, Quality check and Ready. Overdue remains an independent deadline condition. No unsupported Completed records or progress percentages were invented.
@@ -30,7 +30,16 @@ The existing app had a coherent forest palette, but too much text inherited a gr
 
 The color tokens distinguish canvas/surface, ink/text/metadata, rules, brand/focus and semantic urgency/ready states. Spacing uses a four-pixel family, with distinct page, toolbar and record intervals. Controls use a 4 px radius; only modal surfaces use 8 px. The shared transition duration is 120 ms. No dependency was added.
 
-Metadata contrast was checked against white, the warm canvas and the selected-row surface. The revised muted text color has contrast ratios of approximately 5.11:1, 4.76:1 and 4.55:1 respectively. These are targeted checks, not a claim of a complete accessibility certification.
+Metadata contrast was checked against white, the warm canvas and the selected-row surface. The revised muted text color has contrast ratios of approximately 5.11:1, 4.76:1 and 4.58:1 respectively. These are targeted checks, not a claim of a complete accessibility certification.
+
+## Color and interaction follow-up
+
+- Brand accent: muted teal (`#2d7069`), used on active navigation/filter states, case links, focus and primary actions.
+- Stage labels: slate for Received, muted amber for In progress, and muted green for Ready. Overdue dates use muted red. Labels retain text and distinct stage symbols, without large colored badges.
+- Entire desktop rows open their case when a non-interactive cell is clicked. Nested case-ID/Open controls remain independent, and selected text does not trigger opening. Keyboard access stays on the existing native buttons, preserving table semantics.
+- Row hover uses a quiet teal tint and reveals a clearer outlined Open action. Updated and keyboard-focus states remain distinct.
+- Heading-to-filter spacing is 13 px on desktop and 12 px on mobile.
+- Verified clinic-cell opening, Enter on the case ID, the explicit Open button, Escape dismissal and the rendered stage colors. The production build passed after these changes.
 
 ## Verification
 

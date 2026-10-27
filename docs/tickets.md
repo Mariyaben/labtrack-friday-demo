@@ -1,18 +1,16 @@
 # LabTrack — Friday demo tickets
 
-The email contains two concrete problems and one request that needs discovery. Priority is based on the Friday demo, not an assumed production rollout. Estimates total roughly 3–4 hours for a deliberately small prototype, including handoff.
+
 
 ## Questions I would ask Maria before building
 
-1. Can you share two affected cases: the agreed date, the date each person sees, the clinic’s country/time zone, and a screenshot? Does the disagreement appear in the list, the edit form, emails, exports, or all of them?
-2. Is “due date” a calendar day or an exact delivery deadline? If a day, is the promise identical for the lab and clinic? Which time zone defines today/overdue, and which time zone was used when old dates were entered?
-3. Does “ready” mean ready to collect, dispatched, or delivered? Who can mark a case ready? Is this once per case, or can a case be reopened and become ready again?
-4. Which clinic contact should receive messages? Are addresses available and approved for use? What copy and sender should we use, and what should happen if an address is missing or delivery fails?
-5. Who is the main dashboard user? What are their three most frequent tasks, what specifically feels cluttered, and can you show the current dashboard? We should agree on one small improvement for Friday.
-6. What must the clinic group see on Friday, what time is the demo, and who signs it off? Can we use only fictional cases and captured test emails? Are there existing brand assets or a repository to work in?
 
-These questions are a discovery checklist, not claimed answers from Maria. For this exercise I proceed with explicit assumptions below so the demo is reviewable within the timebox.
+1. Is “due date” a calendar day or an exact delivery deadline? If a day, is the promise identical for the lab and clinic? Which time zone defines today/overdue, and which time zone was used when old dates were entered?
+2. Does “ready” mean ready to collect, dispatched, or delivered? Who can mark a case ready? Is this once per case, or can a case be reopened and become ready again?
+3. Who is the main dashboard user? What are their three most frequent tasks, what specifically feels cluttered, and can you show the current dashboard? We should agree on one small improvement for Friday.
+4. What must the clinic group see on Friday, what time is the demo, and who signs it off? Can we use only fictional cases and captured test emails? Are there existing brand assets or a repository to work in?
 
+## Tickets
 ## LT-01 · Keep agreed due dates consistent across countries
 
 **Priority:** P0. **Estimate:** 45–55 minutes.
@@ -30,7 +28,6 @@ These questions are a discovery checklist, not claimed answers from Maria. For t
 - Concurrent stale due-date edits receive a conflict instead of silently overwriting a newer edit.
 - For an existing production dataset, audit the old storage/entry conventions and agree on a migration before any backfill. Do not blindly add a day or cast every old timestamp to a date.
 
-**Production follow-up:** Recover the intended calendar date from the original entry and its known zone, keep originals and an audit trail, compare samples with Maria, dry-run and reconcile before switching reads. If the original date/zone cannot be established, flag records for review. The demo starts with clean fictional data; it does not pretend to migrate an unseen database.
 
 ## LT-02 · Prepare one clinic email when a case becomes ready
 
@@ -64,7 +61,7 @@ These questions are a discovery checklist, not claimed answers from Maria. For t
 - The interface has a usable narrow-screen layout, readable labels, keyboard focus indicators, modal Escape/focus handling, loading state, visible errors and a retry/refresh path.
 - Friday’s demo uses fictional records, clearly identified as demo data. No fabricated claim of reduced task time or user-tested improvement is made.
 
-**Follow-up:** Watch Maria complete her normal morning tasks on the current and proposed dashboard. Use that observation to choose the next change; avoid expanding into reporting, scheduling, CRM or a full redesign during this exercise.
+
 
 ## Delivery checklist · Package and verify the Friday handoff
 
@@ -72,12 +69,6 @@ These questions are a discovery checklist, not claimed answers from Maria. For t
 
 **Acceptance criteria:**
 
-- The public GitHub repo includes setup instructions, assumptions, architecture, tests, demo limitations and AI-use disclosure, without secrets.
 - The live app runs on Vercel with a durable database, and its core date/ready/retry/isolation flows have been checked.
-- Maria gets a short plain-English shipped/not-shipped/needs-from-you update.
-- A walkthrough of at most three minutes covers the date fix, ready email, dashboard scope and one decision to revisit. A script is preparation; it is not a substitute for the requested Loom recording.
-- The application email contains all four deliverable links, the requested personal answers and LinkedIn, using `FDE – Mariya Benny – Friday demo` as the subject.
 
-## Scope guardrail
 
-Suggested allocation: discovery/tickets 20 minutes; implementation 100–130 minutes; deployment/verification 35–45 minutes; client update, application draft and recording 25–35 minutes. Stop at four hours and report any gaps plainly. Do not let WhatsApp setup or a broad dashboard redesign displace the two P0 behaviors.
